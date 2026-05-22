@@ -1,39 +1,22 @@
-# AmplusFold — Research Notes
+# AmplusFold — Notes
 
-Public research narrative for **AmplusFold**, a Drug-Target Interaction (DTI) / Drug-Target Affinity (DTA) model for **pesticide discovery**.
+I'm building AmplusFold, a model that predicts how well small molecules bind to proteins relevant to pesticide discovery — insect, plant, and fungal targets.
 
-> **What this repo is.** A curated set of methodology docs and domain primers from the project. Used to share thinking publicly without surfacing the implementation, the data pipeline, or current model state.
->
-> **What this repo is *not*.** The source code, schema, ingest pipelines, model architectures, baseline results, and execution plans live in a private repository.
+This repo has a few notes I've written along the way. The code, data, and results live in a private repo. What you'll find here is the thinking: what the field looks like, what makes wet-lab data trustworthy, how to choose what to test next, and the common ways these projects go wrong.
 
----
+## Where the project is
 
-## Project in one paragraph
+Early models score around Pearson R = 0.35 on a held-out set of pesticide-relevant measurements, under a strict split where no protein in the test set was seen during training. That's enough to be useful for narrowing down candidate molecules before sending them to a lab, but not enough to rely on alone. The next step is getting real wet-lab data on the actual targets we care about.
 
-Predicts how strongly small molecules bind to pesticide-relevant proteins (insect acetylcholinesterase, nicotinic receptors, plant ALS / EPSPS, fungal CYP51, etc.). Trained on public pharma data (BindingDB / ChEMBL / PubChem), evaluated on a held-out pesticide vault. Designed as a virtual-screening multiplier on top of wet-lab assays — **not** a wet-lab replacement.
+## What's in here
 
-## Where we are
+- [`docs/01_domain_primer_dti.md`](docs/01_domain_primer_dti.md) — what drug-target interaction modeling is, and what the standard binding measurements (Kd, Ki, IC50) actually mean
+- [`docs/04_assay_quality.md`](docs/04_assay_quality.md) — how wet-lab measurements work, and why their noise sets a hard ceiling on any model trained on them
+- [`docs/05_active_learning.md`](docs/05_active_learning.md) — how to pick which molecules to test next when lab time is limited
+- [`docs/06_failure_modes.md`](docs/06_failure_modes.md) — ten ways these projects commonly fail, most frequent first
+- [`docs/07_dti_method_landscape.md`](docs/07_dti_method_landscape.md) — a survey of how people have built these models, from simple to complex
+- [`docs/09_foundation_models_explained.md`](docs/09_foundation_models_explained.md) — what ESM2 and ChemBERTa actually do, in plain language
 
-Early baselines on the held-out pesticide vault land at **Pearson R ≈ 0.35** under a strict cold-target split (no protein-cluster overlap between train and held-out). Meaningful signal, useful for virtual-screening triage, far from deployable on its own. Closing the gap to production requires proprietary wet-lab measurements on the actual targets — that's the next phase.
+## Stack
 
----
-
-## Index
-
-### Domain primers
-
-- [`docs/01_domain_primer_dti.md`](docs/01_domain_primer_dti.md) — DTI vs DTA, binding constants (Kd, Ki, IC50), why pKd is the modeling target
-- [`docs/07_dti_method_landscape.md`](docs/07_dti_method_landscape.md) — Survey of DTI methods, from classical baselines to structure-aware models
-- [`docs/09_foundation_models_explained.md`](docs/09_foundation_models_explained.md) — Plain-language explainer of what ESM2 (protein) and ChemBERTa (molecule) actually do for a DTI model
-
-### Methodology principles
-
-- [`docs/04_assay_quality.md`](docs/04_assay_quality.md) — What an assay measures, wet-lab noise floor as the model's accuracy ceiling, replicate variance
-- [`docs/05_active_learning.md`](docs/05_active_learning.md) — The active-learning loop: balancing exploit / explore / diverse sampling; cycle cadence
-- [`docs/06_failure_modes.md`](docs/06_failure_modes.md) — The 10 failure modes that kill DTI projects, ranked by frequency
-
----
-
-## Stack (for context)
-
-Python · PostgreSQL · RDKit · PyTorch · ESM2 · ChemBERTa
+Python, PostgreSQL, RDKit, PyTorch, ESM2, ChemBERTa.
