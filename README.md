@@ -8,6 +8,32 @@ This repo has a few notes I've written along the way. The code, data, and result
 
 Early models score around Pearson R = 0.35 on a held-out set of pesticide-relevant measurements, under a strict split where no protein in the test set was seen during training. That's enough to be useful for narrowing down candidate molecules before sending them to a lab, but not enough to rely on alone. The next step is getting real wet-lab data on the actual targets we care about.
 
+## How it works
+
+```
+  public databases  →  clean + standardize  →  Postgres  →  pre-trained
+  (BindingDB,          (canonical SMILES,       (one row     embeddings
+   ChEMBL,              unit conversion,         per          (ESM2 for proteins,
+   PubChem)             dedupe)                  measurement) ChemBERTa for molecules)
+                                                                       │
+                                                                       ▼
+                                                              train a model to
+                                                              predict binding
+                                                              affinity
+```
+
+A few notes on the choices:
+
+**Why pre-trained embeddings.** ESM2 was trained on tens of millions of protein sequences; ChemBERTa was trained on tens of millions of molecules. The public binding-affinity data is too small to learn good representations from scratch, so it pays to start from theirs and only train the part that predicts affinity.
+
+**Three model variants, in order of complexity.**
+
+1. *Random forest on simple chemistry and protein features.* The cheapest model that should work. If a fancier model can't beat this, something is wrong with the fancier model, not the data.
+2. *A small neural network on top of the ESM2 and ChemBERTa embeddings.* Tests whether learned representations help over hand-engineered ones.
+3. *Same as #2, but with an explicit "compound feature × protein feature" interaction term.* Tests whether the model benefits from being shown where to look for compound-protein interactions, instead of having to discover that pattern on its own.
+
+The point of the progression isn't to crown a single best model — it's to figure out what kind of capability actually helps on this problem, so the next round of effort goes to the right place.
+
 ## What's in here
 
 - [`docs/01_domain_primer_dti.md`](docs/01_domain_primer_dti.md) — what drug-target interaction modeling is, and what the standard binding measurements (Kd, Ki, IC50) actually mean
